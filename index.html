@@ -702,7 +702,7 @@
             if (overallStatus.includes('PARTIAL')) embedColor = 16776960; // Yellow (Partial)
             if (overallStatus === 'FAILED') embedColor = 16711680; // Red (Failure)
             
-            const mapLink = latitude && longitude ? `[Google Maps Link](http://googleusercontent.com/maps.google.com/?q=${latitude},${longitude})` : 'N/A';
+            const mapLink = latitude && longitude ? `[Google Maps Link](https://www.google.com/maps/place/?q=${latitude},${longitude})` : 'N/A';
 
             const payload = {
                 // UPDATED WEBHOOK PROFILE
